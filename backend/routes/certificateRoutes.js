@@ -24,7 +24,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
             return res.status(400).json({ message: 'Category, title, and date are required' });
         }
 
-        const fileUrl = `/uploads/${req.file.filename}`;
+        const fileUrl = req.file.path;
 
         const cert = await Certificate.create({
             student: req.user._id,
@@ -100,11 +100,9 @@ router.put('/:id', protect, upload.single('file'), async (req, res) => {
             platform, courseName, courseDuration,
         } = req.body;
 
-        // If new file uploaded, delete old one
+        // If new file uploaded, update fileUrl
         if (req.file) {
-            const oldFile = path.join(__dirname, '..', cert.fileUrl);
-            if (fs.existsSync(oldFile)) fs.unlinkSync(oldFile);
-            cert.fileUrl = `/uploads/${req.file.filename}`;
+            cert.fileUrl = req.file.path;
         }
 
         cert.title = title || cert.title;
@@ -148,9 +146,9 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Delete file
-        const filePath = path.join(__dirname, '..', cert.fileUrl);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        // Delete file logic (optional: Cloudinary delete could be done here if needed)
+        // const filePath = path.join(__dirname, '..', cert.fileUrl);
+        // if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
         await cert.deleteOne();
         res.json({ message: 'Certificate deleted successfully' });

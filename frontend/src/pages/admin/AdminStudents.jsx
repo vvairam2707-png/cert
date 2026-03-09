@@ -11,6 +11,8 @@ export default function AdminStudents() {
     const [certs, setCerts] = useState([]);
     const [certsLoading, setCertsLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         api.get('/admin/students').then(({ data }) => { setStudents(data); setLoading(false); });
@@ -24,6 +26,20 @@ export default function AdminStudents() {
             setCerts(data);
         } catch { setCerts([]); }
         finally { setCertsLoading(false); }
+    };
+
+    const deleteStudent = async (studentId) => {
+        setDeleting(true);
+        try {
+            await api.delete(`/admin/students/${studentId}`);
+            setStudents(students.filter(s => s._id !== studentId));
+            setDeleteConfirm(null);
+            setSelected(null);
+        } catch (error) {
+            alert('Failed to delete student');
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const filtered = students.filter(s => {
@@ -104,6 +120,9 @@ export default function AdminStudents() {
                                             <button className="btn-outline" onClick={() => viewStudent(s)} style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}>
                                                 🏆 Achievements
                                             </button>
+                                            <button className="btn-danger" onClick={() => setDeleteConfirm(s)} style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem', marginLeft: '0.5rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                                                🗑️ Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -163,6 +182,28 @@ export default function AdminStudents() {
                                 ))}
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation modal */}
+            {deleteConfirm && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+                    <div className="modal-box" style={{ padding: '2rem', maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ef4444' }}>Delete Student</h2>
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                Are you sure you want to delete <strong>{deleteConfirm.name}</strong>? This will also delete all their certificates and uploaded files. This action cannot be undone.
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setDeleteConfirm(null)} className="btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }} disabled={deleting}>
+                                Cancel
+                            </button>
+                            <button onClick={() => deleteStudent(deleteConfirm._id)} className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', background: '#ef4444', border: 'none', color: 'white', borderRadius: 6, cursor: 'pointer' }} disabled={deleting}>
+                                {deleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

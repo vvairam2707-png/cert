@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const fs = require('fs');
 const connectDB = require('./config/db');
 
 dotenv.config();
@@ -10,22 +9,12 @@ connectDB();
 
 const app = express();
 
-const corsOptions = {
-    origin: process.env.NODE_ENV === 'production'
-        ? true // Reflect origin or set to specific domain
-        : 'http://localhost:5173',
-    credentials: true
-};
-app.use(cors(corsOptions));
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
-const uploadsPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsPath)) {
-    fs.mkdirSync(uploadsPath, { recursive: true });
-}
-app.use('/uploads', express.static(uploadsPath));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));

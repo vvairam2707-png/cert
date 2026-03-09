@@ -1,7 +1,16 @@
 {
-    "name": "cert-app",
+    "name": "fullstack-cert",
     "version": "1.0.0",
     "scripts": {
-        "build": "npm install --prefix frontend && npm run build --prefix frontend"
+        "build": "npm run build --prefix frontend"
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "cors": "^2.8.6",
+        "dotenv": "^17.3.1",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "mongoose": "^9.2.4",
+        "multer": "^2.1.1"
     }
 }

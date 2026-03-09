@@ -91,4 +91,32 @@ router.delete('/certificates/:id', protect, adminOnly, async (req, res) => {
     }
 });
 
+// @route DELETE /api/admin/students/:id  — Admin delete student
+router.delete('/students/:id', protect, adminOnly, async (req, res) => {
+    try {
+        const student = await User.findById(req.params.id);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        // Find all certificates of this student
+        const certs = await Certificate.find({ student: req.params.id });
+
+        // Delete all certificate files
+        const path = require('path');
+        const fs = require('fs');
+        for (const cert of certs) {
+            const filePath = path.join(__dirname, '..', cert.fileUrl);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
+
+        // Delete all certificates
+        await Certificate.deleteMany({ student: req.params.id });
+
+        // Delete student
+        await student.deleteOne();
+        res.json({ message: 'Student and all associated data deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
